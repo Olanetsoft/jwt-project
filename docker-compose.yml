@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+
+  node-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - sqlite-db:/app/sqlite_db
+    ports:
+      - 3001:3001
+    environment:
+      - API_PORT=3001
+  mongo-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - sqlite-db:/app/sqlite_db
+    ports:
+      - 5004:5000
+    environment:
+      - FLASK_APP=src/__init__.py
+      - FLASK_ENV=production
+
+volumes:
+  sqlite-db:
