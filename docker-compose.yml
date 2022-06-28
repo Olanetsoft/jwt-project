@@ -4,25 +4,31 @@ services:
 
   node-server:
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile
     volumes:
-      - sqlite-db:/app/sqlite_db
+      - ./server:/server
+      - /server/node_modules
+    depends_on:
+      - mongo-server
+    networks:
+      - jwt-project
     ports:
       - 3001:3001
+    # restart: unless-stopped
     environment:
       - API_PORT=3001
+      - MONGO_URI=mongodb://mongo-server/n69ut?authSource=admin
   mongo-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: mongo:latest
     volumes:
-      - sqlite-db:/app/sqlite_db
-    ports:
-      - 5004:5000
+      - ./data:/data
+    networks:
+      - jwt-project
+    restart: unless-stopped
     environment:
-      - FLASK_APP=src/__init__.py
-      - FLASK_ENV=production
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
 
-volumes:
-  sqlite-db:
+networks:
+  jwt-project:

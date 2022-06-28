@@ -1,4 +1,3 @@
-require("dotenv").config();
 require("./config/database").connect();
 const express = require("express");
 const bcrypt = require("bcryptjs");
@@ -43,7 +42,7 @@ app.post("/register", async (req, res) => {
     // Create token
     const token = jwt.sign(
       { user_id: user._id, email },
-      process.env.TOKEN_KEY,
+      process.env.TOKEN_KEY || 'asdf',
       {
         expiresIn: "2h",
       }
@@ -74,7 +73,7 @@ app.post("/login", async (req, res) => {
       // Create token
       const token = jwt.sign(
         { user_id: user._id, email },
-        process.env.TOKEN_KEY,
+        process.env.TOKEN_KEY || 'asdf',
         {
           expiresIn: "2h",
         }
@@ -94,6 +93,10 @@ app.post("/login", async (req, res) => {
 
 app.get("/welcome", auth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
+});
+
+app.get("/health-check", (req, res) => {
+  res.status(200).send("health-check 💪");
 });
 
 // This should be the last route else any after it won't work
