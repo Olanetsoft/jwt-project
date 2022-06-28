@@ -15,20 +15,27 @@ services:
       - jwt-project
     ports:
       - 3001:3001
-    # restart: unless-stopped
+    restart: unless-stopped
     environment:
       - API_PORT=3001
       - MONGO_URI=mongodb://mongo-server/n69ut?authSource=admin
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASS=${MONGO_PASS}
   mongo-server:
     image: mongo:latest
     volumes:
-      - ./data:/data
+      - mongo:/data
     networks:
       - jwt-project
+    ports:
+      - 27017:27017
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+
+volumes:
+  mongo:
 
 networks:
   jwt-project:
