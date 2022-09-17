@@ -14,10 +14,10 @@ app.use(express.json({ limit: "50mb" }));
 app.post("/register", async (req, res) => {
   try {
     // Get user input
-    const { first_name, last_name, email, password } = req.body;
+    const { first_name, last_name, displayName, email, password } = req.body;
 
     // Validate user input
-    if (!(email && password && first_name && last_name)) {
+    if (!(email && password && first_name && last_name && displayName)) {
       res.status(400).send("All input is required");
     }
 
@@ -36,6 +36,7 @@ app.post("/register", async (req, res) => {
     const user = await User.create({
       first_name,
       last_name,
+      displayName,
       email: email.toLowerCase(), // sanitize: convert email to lowercase
       password: encryptedPassword,
     });
@@ -85,8 +86,9 @@ app.post("/login", async (req, res) => {
 
       // user
       res.status(200).json(user);
+    } else {
+      res.status(400).send("Invalid Credentials");
     }
-    res.status(400).send("Invalid Credentials");
   } catch (err) {
     console.log(err);
   }
