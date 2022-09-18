@@ -6,12 +6,21 @@ const jwt = require("jsonwebtoken");
 
 const User = require("./model/user");
 const auth = require("./middleware/auth");
+const cors = require("cors");
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "*",
+    allowedHeaders: ["Content-Type", "Authorization"],
+    preflightContinue: false,
+  })
+);
+
 app.use(express.json({ limit: "50mb" }));
 
-app.post("/register", async (req, res) => {
+app.post("/register", cors(), async (req, res) => {
   try {
     // Get user input
     const { first_name, last_name, displayName, email, password } = req.body;
@@ -59,7 +68,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", cors(), async (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
   try {
     // Get user input
     const { email, password } = req.body;
@@ -86,6 +96,7 @@ app.post("/login", async (req, res) => {
 
       // user
       res.status(200).json(user);
+      console.log("i requested login");
     } else {
       res.status(400).send("Invalid Credentials");
     }
@@ -94,8 +105,13 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/welcome", auth, (req, res) => {
+app.get("/welcome", cors(), auth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
+});
+
+app.get("/", cors(), (req, res) => {
+  res.status(200).send("Hello i called you");
+  console.log("Hello i called you as default route");
 });
 
 // This should be the last route else any after it won't work
