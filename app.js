@@ -69,7 +69,7 @@ app.post("/register", cors(), async (req, res) => {
 });
 
 app.post("/login", cors(), async (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  // res.header("Access-Control-Allow-Origin", "*");
   try {
     // Get user input
     const { email, password } = req.body;
