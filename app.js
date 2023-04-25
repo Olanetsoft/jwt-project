@@ -67,8 +67,8 @@ app.post("/login", async (req, res) => {
     if (!(email && password)) {
       res.status(400).send("All input is required");
     }
-    // Validate if user exist in our database
-    const user = await User.findOne({ email });
+    // Validate if user exist in our database and also convert email input to lowerCase before check.
+    const user = await User.findOne({ email.toLowerCase() });
 
     if (user && (await bcrypt.compare(password, user.password))) {
       // Create token
