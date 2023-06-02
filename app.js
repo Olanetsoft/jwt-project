@@ -19,8 +19,6 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "50mb" }));
-
 app.post("/send-mail", (req, res) => {
   const { name, email, message } = req.body;
   // res.status(200).send("Hello i called you");
