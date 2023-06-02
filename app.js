@@ -3,6 +3,7 @@ require("./config/database").connect();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer');
 
 const User = require("./model/user");
 const auth = require("./middleware/auth");
@@ -20,101 +21,43 @@ app.use(
 
 app.use(express.json({ limit: "50mb" }));
 
-app.post("/register", cors(), async (req, res) => {
-  try {
-    // Get user input
-    const { first_name, last_name, displayName, email, password } = req.body;
+app.post("/send-mail", (req, res) => {
+  const { name, email, message } = req.body;
+  // res.status(200).send("Hello i called you");
 
-    // Validate user input
-    if (!(email && password && first_name && last_name && displayName)) {
-      res.status(400).send("All input is required");
-    }
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "seyi.oyebamiji@gmail.com",
+      pass: "Knighttitan",
+      type: "OAuth2",
+      clientId: "506059073976-6dhfk7r53i62mh843ghi8k16o0inmff1.apps.googleusercontent.com",
+      clientSecret: "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",
+      refreshToken: "1//04drP8yyhU9pSCgYIARAAGAQSNwF-L9IrKjQcFmWChcewS5AGia7TKogwXaWG4GVJcCkitXQsqYWpzYWwQ5CEykXzu0cYT4rcAvQ"
+    },
+  });
 
-    // check if user already exist
-    // Validate if user exist in our database
-    const oldUser = await User.findOne({ email });
+  // Set up the email data
+  const mailOptions = {
+    from: "rikudoseyi96@gmail.com",
+    to: "seyi.oyebamiji@gmail.com",
+    subject: "New message from your website",
+    text: `Testing`,
+    // text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+  };
 
-    if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
-    }
-
-    //Encrypt user password
-    encryptedPassword = await bcrypt.hash(password, 10);
-
-    // Create user in our database
-    const user = await User.create({
-      first_name,
-      last_name,
-      displayName,
-      email: email.toLowerCase(), // sanitize: convert email to lowercase
-      password: encryptedPassword,
-    });
-
-    // Create token
-    const token = jwt.sign(
-      { user_id: user._id, email },
-      process.env.TOKEN_KEY,
-      {
-        expiresIn: "2h",
-      }
-    );
-    // save user token
-    user.token = token;
-
-    // return new user
-    res.status(201).json(user);
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-app.post("/login", cors(), async (req, res) => {
-  // res.header("Access-Control-Allow-Origin", "*");
-  try {
-    // Get user input
-    const { email, password } = req.body;
-
-    // Validate user input
-    if (!(email && password)) {
-      res.status(400).send("All input is required");
-    }
-    // Validate if user exist in our database
-    const user = await User.findOne({ email });
-
-    if (user && (await bcrypt.compare(password, user.password))) {
-      // Create token
-      const token = jwt.sign(
-        { user_id: user._id, email },
-        process.env.TOKEN_KEY,
-        {
-          expiresIn: "2h",
-        }
-      );
-
-      // save user token
-      user.token = token;
-
-      // user
-      res.status(200).json(user);
-      console.log("i requested login");
+  // Send the email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("An error occurred while sending the email.");
     } else {
-      res.status(400).send("Invalid Credentials");
+      console.log("Email sent: " + info.response);
+      res.status(200).send("Email sent successfully!");
     }
-  } catch (err) {
-    console.log(err);
-  }
+  });
 });
 
-app.get("/welcome", cors(), auth, (req, res) => {
-  res.status(200).send("Welcome 🙌 ");
-});
-
-app.get("/", cors(), (req, res) => {
-  res.status(200).send("Hello i called you");
-  console.log("Hello i called you as default route");
-});
-
-// This should be the last route else any after it won't work
 app.use("*", (req, res) => {
   res.status(404).json({
     success: "false",
